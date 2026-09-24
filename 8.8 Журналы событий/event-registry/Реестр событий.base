@@ -1,0 +1,81 @@
+filters:
+  and:
+    - file.ext == "md"
+    - file.hasTag("event-registry")
+properties:
+  event_code:
+    displayName: Код события
+  status:
+    displayName: Статус
+  action_name:
+    displayName: Действие
+  domain:
+    displayName: Область
+  source_apps:
+    displayName: Источники
+  journals:
+    displayName: Журналы
+  severity:
+    displayName: Критичность
+  outcomes:
+    displayName: Исходы
+  requirements:
+    displayName: Требования
+  gost_59548_type:
+    displayName: Тип по ГОСТ 59548
+  fstec_measures:
+    displayName: Меры ФСТЭК
+  owner:
+    displayName: Владелец
+views:
+  - type: table
+    name: Все события
+    order:
+      - event_code
+      - status
+      - action_name
+      - domain
+      - source_apps
+      - journals
+      - severity
+      - outcomes
+      - requirements
+      - gost_59548_type
+      - fstec_measures
+  - type: table
+    name: События ИБ
+    filters:
+      and:
+        - journals.contains("security")
+    order:
+      - event_code
+      - status
+      - action_name
+      - source_apps
+      - severity
+      - outcomes
+      - gost_59548_type
+      - requirements
+  - type: table
+    name: Требуют доработки
+    filters:
+      or:
+        - status == "draft"
+        - status == "review"
+    order:
+      - event_code
+      - status
+      - action_name
+      - owner
+      - requirements
+  - type: table
+    name: Критические
+    filters:
+      and:
+        - severity == "CRITICAL"
+    order:
+      - event_code
+      - status
+      - action_name
+      - source_apps
+      - requirements
