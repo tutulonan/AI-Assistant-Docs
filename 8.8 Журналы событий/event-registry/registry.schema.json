@@ -1,0 +1,569 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dcs.local/schemas/event-registry.schema.json",
+  "title": "Запись Реестра событий РСУ",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_code",
+    "status",
+    "title",
+    "action_name",
+    "domain",
+    "requirements",
+    "sources",
+    "routing",
+    "severity",
+    "fields",
+    "parameters",
+    "outcomes",
+    "regulatory_mapping"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "event_code": {
+      "type": "string",
+      "pattern": "^EVT-[A-Z][A-Z0-9]{1,7}-[0-9]{3}$",
+      "maxLength": 32
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "review",
+        "approved",
+        "deprecated"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 160
+    },
+    "action_name": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 128
+    },
+    "domain": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_.-]*$"
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 2
+    },
+    "introduced_in": {
+      "type": "string"
+    },
+    "deprecated_in": {
+      "type": "string"
+    },
+    "replaced_by": {
+      "type": "string",
+      "pattern": "^EVT-[A-Z][A-Z0-9]{1,7}-[0-9]{3}$"
+    },
+    "requirements": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/requirementReference"
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/source"
+      }
+    },
+    "routing": {
+      "$ref": "#/$defs/routing"
+    },
+    "severity": {
+      "$ref": "#/$defs/severity"
+    },
+    "fields": {
+      "$ref": "#/$defs/fieldRules"
+    },
+    "parameters": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]*$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/parameter"
+      }
+    },
+    "variants": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/eventVariant"
+      }
+    },
+    "outcomes": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "enum": [
+          "success",
+          "access_denied",
+          "validation_error",
+          "resource_busy",
+          "system_failure"
+        ]
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/outcome"
+      }
+    },
+    "regulatory_mapping": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/regulatoryReference"
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "approved"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "requirements": {
+            "contains": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "pattern": "^SR-[0-9]{3}-[0-9]{3}-[0-9]{3}$"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "outcomeCode": {
+      "enum": [
+        "success",
+        "access_denied",
+        "validation_error",
+        "resource_busy",
+        "system_failure"
+      ]
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_type",
+        "source_app"
+      ],
+      "properties": {
+        "source_type": {
+          "enum": [
+            "armi",
+            "armo",
+            "server",
+            "service",
+            "plc"
+          ]
+        },
+        "source_app": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9.-]{1,31}$",
+          "maxLength": 32
+        }
+      }
+    },
+    "eventField": {
+      "enum": [
+        "event_id",
+        "event_code",
+        "correlation_id",
+        "event_time",
+        "recorded_time",
+        "outcome",
+        "action_name",
+        "severity",
+        "journal_mask",
+        "user_login",
+        "user_fullname",
+        "user_status",
+        "actor_is_admin",
+        "workstation",
+        "source_app",
+        "scope",
+        "location",
+        "field_name",
+        "old_value",
+        "new_value",
+        "message"
+      ]
+    },
+    "requirementReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "relation"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(BR-[0-9]{3}-[0-9]{3}|FEAT-[0-9]{3}-[0-9]{3}|SR-[0-9]{3}-[0-9]{3}-[0-9]{3})$"
+        },
+        "relation": {
+          "enum": [
+            "source",
+            "defines_event",
+            "triggers_event",
+            "defines_validation",
+            "defines_access",
+            "derived_from"
+          ]
+        },
+        "outcomes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/outcomeCode"
+          }
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "routing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "default_journals",
+        "rules"
+      ],
+      "properties": {
+        "default_journals": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "engineer",
+              "operator",
+              "security"
+            ]
+          }
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/routingRule"
+          }
+        }
+      }
+    },
+    "routingRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "when",
+        "add_journals"
+      ],
+      "properties": {
+        "when": {
+          "$ref": "#/$defs/condition"
+        },
+        "add_journals": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "engineer",
+              "operator",
+              "security"
+            ]
+          }
+        }
+      }
+    },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field",
+        "operator",
+        "value"
+      ],
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "operator": {
+          "enum": [
+            "eq",
+            "neq",
+            "in",
+            "not_in",
+            "exists"
+          ]
+        },
+        "value": {}
+      }
+    },
+    "severity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "default",
+        "by_outcome"
+      ],
+      "properties": {
+        "default": {
+          "enum": [
+            "INFO",
+            "WARN",
+            "ERROR",
+            "CRITICAL"
+          ]
+        },
+        "by_outcome": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/outcomeCode"
+          },
+          "additionalProperties": {
+            "enum": [
+              "INFO",
+              "WARN",
+              "ERROR",
+              "CRITICAL"
+            ]
+          }
+        }
+      }
+    },
+    "fieldRules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "optional",
+        "conditional",
+        "constants",
+        "derived"
+      ],
+      "properties": {
+        "required": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/eventField"
+          }
+        },
+        "optional": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/eventField"
+          }
+        },
+        "conditional": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "field",
+              "when",
+              "source"
+            ],
+            "properties": {
+              "field": {
+                "$ref": "#/$defs/eventField"
+              },
+              "when": {
+                "$ref": "#/$defs/condition"
+              },
+              "source": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "constants": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ]
+          }
+        },
+        "derived": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "parameter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "description",
+        "source",
+        "sensitive"
+      ],
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "sensitive": {
+          "type": "boolean"
+        },
+        "format": {
+          "type": "string"
+        }
+      }
+    },
+    "eventVariant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "constants"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "title": {
+          "type": "string"
+        },
+        "constants": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ]
+          }
+        },
+        "value_format": {
+          "type": "string"
+        },
+        "emit_separately": {
+          "type": "boolean"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trigger",
+        "message_key",
+        "message_template_ru",
+        "required_parameters"
+      ],
+      "properties": {
+        "trigger": {
+          "type": "string",
+          "minLength": 5
+        },
+        "message_key": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_.-]*$"
+        },
+        "message_template_ru": {
+          "type": "string"
+        },
+        "required_parameters": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        }
+      }
+    },
+    "regulatoryReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document",
+        "references",
+        "applicability"
+      ],
+      "properties": {
+        "document": {
+          "enum": [
+            "GOST_R_59548_2022",
+            "GOST_R_59547_2021",
+            "GOST_R_IEC_62443_3_3_2016",
+            "FSTEC_ORDER_239",
+            "FSTEC_METHOD_2026"
+          ]
+        },
+        "references": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "event_type": {
+          "type": "string"
+        },
+        "applicability": {
+          "enum": [
+            "mandatory",
+            "conditional",
+            "informative"
+          ]
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

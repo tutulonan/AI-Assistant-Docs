@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Реестр событий РСУ</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --panel: #f6f7f9;
+      --text: #20242b;
+      --muted: #667085;
+      --line: #d7dce3;
+      --accent: #315efb;
+      --chip: #e9eefc;
+      --chip-text: #2446ad;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #17191d;
+        --panel: #202329;
+        --text: #e8eaf0;
+        --muted: #a3a9b5;
+        --line: #3a3f49;
+        --accent: #8aa4ff;
+        --chip: #29365d;
+        --chip-text: #c2ceff;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    main { max-width: 1600px; margin: 0 auto; padding: 24px; }
+    h1 { margin: 0 0 6px; font-size: 28px; }
+    .subtitle { margin: 0 0 22px; color: var(--muted); }
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(240px, 2fr) repeat(6, minmax(140px, 1fr));
+      gap: 10px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+    }
+    label { display: grid; gap: 5px; color: var(--muted); font-size: 12px; }
+    input, select, button {
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--bg);
+      color: var(--text);
+      padding: 7px 9px;
+      font: inherit;
+    }
+    button { cursor: pointer; }
+    button:hover { border-color: var(--accent); }
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin: 16px 0 8px;
+      color: var(--muted);
+    }
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+    table { width: 100%; min-width: 1280px; border-collapse: collapse; }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: var(--panel);
+      white-space: nowrap;
+    }
+    tbody tr:hover { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+    .code { font: 600 13px/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+    .chip {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: var(--chip);
+      color: var(--chip-text);
+      white-space: nowrap;
+      font-size: 12px;
+    }
+    .status-draft { background: #fff1c2; color: #755600; }
+    .status-review { background: #dce8ff; color: #244a8f; }
+    .status-approved { background: #d9f4df; color: #246333; }
+    .status-deprecated { background: #ececf0; color: #555b66; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .empty, .error { padding: 32px; text-align: center; color: var(--muted); }
+    .error { color: #b42318; }
+    @media (max-width: 1200px) {
+      .filters { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
+      .filters label:first-child { grid-column: 1 / -1; }
+    }
+    @media (max-width: 700px) {
+      main { padding: 14px; }
+      .filters { grid-template-columns: 1fr; }
+      .filters label:first-child { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Реестр событий РСУ</h1>
+  <p class="subtitle">Поиск и фильтрация событий Журналов Инженера, Оператора и ИБ.</p>
+
+  <section class="filters" aria-label="Фильтры">
+    <label>Поиск
+      <input id="search" type="search" placeholder="Код, действие, требование, ГОСТ…">
+    </label>
+    <label>Статус<select id="status"><option value="">Все</option></select></label>
+    <label>Область<select id="domain"><option value="">Все</option></select></label>
+    <label>Источник<select id="source"><option value="">Все</option></select></label>
+    <label>Журнал<select id="journal"><option value="">Все</option></select></label>
+    <label>Критичность<select id="severity"><option value="">Все</option></select></label>
+    <label>Исход<select id="outcome"><option value="">Все</option></select></label>
+  </section>
+
+  <div class="toolbar">
+    <span id="count">Загрузка…</span>
+    <button id="reset" type="button">Сбросить фильтры</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Код</th>
+          <th>Событие</th>
+          <th>Статус</th>
+          <th>Область</th>
+          <th>Источники</th>
+          <th>Журналы</th>
+          <th>Критичность</th>
+          <th>Исходы</th>
+          <th>Требования</th>
+          <th>Нормативное соответствие</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div id="message" class="empty" hidden></div>
+  </div>
+</main>
+
+<script>
+  const state = { events: [] }
+  const ids = ["search", "status", "domain", "source", "journal", "severity", "outcome"]
+  const el = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]))
+  const rows = document.getElementById("rows")
+  const count = document.getElementById("count")
+  const message = document.getElementById("message")
+
+  const labels = {
+    security: "ИБ",
+    engineer: "Инженера",
+    operator: "Оператора",
+    draft: "Черновик",
+    review: "На ревью",
+    approved: "Согласовано",
+    deprecated: "Устарело"
+  }
+
+  const list = value => Array.isArray(value) ? value : []
+  const text = value => String(value ?? "")
+  const chip = (value, className = "") =>
+    `<span class="chip ${className}">${escapeHtml(labels[value] ?? value)}</span>`
+  const chips = (values, className = "") =>
+    `<div class="chips">${list(values).map(v => chip(v, className)).join("")}</div>`
+  const escapeHtml = value => text(value).replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]))
+
+  function valuesFor(key) {
+    const result = new Set()
+    for (const event of state.events) {
+      const value = event[key]
+      if (Array.isArray(value)) value.forEach(v => result.add(v))
+      else if (value) result.add(value)
+    }
+    return [...result].sort((a, b) => text(a).localeCompare(text(b), "ru"))
+  }
+
+  function fillSelect(id, key = id) {
+    for (const value of valuesFor(key)) {
+      const option = document.createElement("option")
+      option.value = value
+      option.textContent = labels[value] ?? value
+      el[id].append(option)
+    }
+  }
+
+  function matches(event) {
+    const haystack = [
+      event.event_code,
+      event.action_name,
+      event.domain,
+      ...list(event.source_apps),
+      ...list(event.journals),
+      event.severity,
+      ...list(event.outcomes),
+      ...list(event.requirements),
+      event.gost_type,
+      ...list(event.fstec_measures)
+    ].join(" ").toLocaleLowerCase("ru")
+    const query = el.search.value.trim().toLocaleLowerCase("ru")
+    return (!query || haystack.includes(query))
+      && (!el.status.value || event.status === el.status.value)
+      && (!el.domain.value || event.domain === el.domain.value)
+      && (!el.source.value || list(event.source_apps).includes(el.source.value))
+      && (!el.journal.value || list(event.journals).includes(el.journal.value))
+      && (!el.severity.value || event.severity === el.severity.value)
+      && (!el.outcome.value || list(event.outcomes).includes(el.outcome.value))
+  }
+
+  function render() {
+    const visible = state.events.filter(matches)
+    count.textContent = `Показано: ${visible.length} из ${state.events.length}`
+    rows.innerHTML = visible.map(event => `
+      <tr>
+        <td class="code"><a href="${escapeHtml(event.details_url)}">${escapeHtml(event.event_code)}</a></td>
+        <td>${escapeHtml(event.action_name)}</td>
+        <td>${chip(event.status, `status-${event.status}`)}</td>
+        <td>${escapeHtml(event.domain)}</td>
+        <td>${chips(event.source_apps)}</td>
+        <td>${chips(event.journals)}</td>
+        <td>${chip(event.severity)}</td>
+        <td>${chips(event.outcomes)}</td>
+        <td>${chips(event.requirements)}</td>
+        <td>
+          <div>${escapeHtml(event.gost_type)}</div>
+          ${chips(event.fstec_measures)}
+        </td>
+      </tr>
+    `).join("")
+    message.hidden = visible.length > 0
+    if (!visible.length) {
+      message.textContent = "По заданным условиям события не найдены."
+    }
+  }
+
+  ids.forEach(id => el[id].addEventListener("input", render))
+  document.getElementById("reset").addEventListener("click", () => {
+    ids.forEach(id => { el[id].value = "" })
+    render()
+  })
+
+  fetch("./events.json")
+    .then(response => {
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      return response.json()
+    })
+    .then(events => {
+      state.events = events
+      fillSelect("status")
+      fillSelect("domain")
+      fillSelect("source", "source_apps")
+      fillSelect("journal", "journals")
+      fillSelect("severity")
+      fillSelect("outcome", "outcomes")
+      render()
+    })
+    .catch(error => {
+      count.textContent = "Реестр недоступен"
+      message.hidden = false
+      message.className = "error"
+      message.textContent = `Не удалось загрузить events.json: ${error.message}`
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+[
+  {
+    "event_code": "EVT-SEC-001",
+    "action_name": "Авторизация пользователя",
+    "status": "draft",
+    "domain": "security.authentication",
+    "source_apps": ["armi", "armo"],
+    "journals": ["security"],
+    "severity": "INFO",
+    "outcomes": ["success", "access_denied", "validation_error", "system_failure"],
+    "requirements": ["FEAT-921-000", "FEAT-922-012", "BR-884-001"],
+    "gost_type": "Идентификация и аутентификация",
+    "fstec_measures": ["АУД.4", "РСБ.1"],
+    "details_url": "../events/security/EVT-SEC-001"
+  },
+  {
+    "event_code": "EVT-SEC-005",
+    "action_name": "Изменение стандартных параметров аутентификации",
+    "status": "draft",
+    "domain": "security.authentication_settings",
+    "source_apps": ["armi"],
+    "journals": ["security"],
+    "severity": "ERROR",
+    "outcomes": ["success", "access_denied", "validation_error", "system_failure"],
+    "requirements": ["FEAT-922-000", "BR-884-000"],
+    "gost_type": "Изменение настроек функций безопасности",
+    "fstec_measures": ["АУД.4"],
+    "details_url": "../events/security/EVT-SEC-005"
+  },
+  {
+    "event_code": "EVT-SEC-028",
+    "action_name": "Автоматическая блокировка учетной записи",
+    "status": "draft",
+    "domain": "security.user_accounts",
+    "source_apps": ["auth-service"],
+    "journals": ["security"],
+    "severity": "ERROR",
+    "outcomes": ["success", "system_failure"],
+    "requirements": ["FEAT-950-006", "BR-884-001"],
+    "gost_type": "Управление учетными записями",
+    "fstec_measures": ["РСБ.1"],
+    "details_url": "../events/security/EVT-SEC-028"
+  },
+  {
+    "event_code": "EVT-SEC-032",
+    "action_name": "Подтверждение изменения защищенного параметра",
+    "status": "draft",
+    "domain": "security.protected_parameters",
+    "source_apps": ["armi", "armo"],
+    "journals": ["security", "engineer", "operator"],
+    "severity": "ERROR",
+    "outcomes": ["success", "access_denied", "validation_error", "system_failure"],
+    "requirements": ["FEAT-941-001", "BR-884-000"],
+    "gost_type": "Изменение параметров и подтверждение полномочий",
+    "fstec_measures": ["АУД.4", "АУД.9"],
+    "details_url": "../events/security/EVT-SEC-032"
+  },
+  {
+    "event_code": "EVT-AUD-001",
+    "action_name": "Сбой записи события аудита",
+    "status": "draft",
+    "domain": "audit.delivery",
+    "source_apps": ["audit-service"],
+    "journals": ["security"],
+    "severity": "CRITICAL",
+    "outcomes": ["system_failure"],
+    "requirements": ["BR-882-003", "BR-888-000", "FEAT-884-002", "FEAT-888-000"],
+    "gost_type": "Событие функционирования журнала",
+    "fstec_measures": ["АУД.8", "РСБ.5"],
+    "details_url": "../events/audit/EVT-AUD-001"
+  }
+]
