@@ -9,23 +9,35 @@
       color-scheme: light dark;
       --bg: #ffffff;
       --panel: #f6f7f9;
+      --panel-strong: #eef1f5;
       --text: #20242b;
       --muted: #667085;
       --line: #d7dce3;
+      --line-strong: #b8c0cc;
       --accent: #315efb;
+      --accent-soft: #eef2ff;
       --chip: #e9eefc;
       --chip-text: #2446ad;
+      --row-alt: #fafbfc;
+      --row-hover: #f1f5ff;
+      --shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
     }
     @media (prefers-color-scheme: dark) {
       :root {
         --bg: #17191d;
         --panel: #202329;
+        --panel-strong: #272b32;
         --text: #e8eaf0;
         --muted: #a3a9b5;
         --line: #3a3f49;
-        --accent: #8aa4ff;
+        --line-strong: #555c68;
+        --accent: #9bb0ff;
+        --accent-soft: #252f52;
         --chip: #29365d;
         --chip-text: #c2ceff;
+        --row-alt: #1b1e23;
+        --row-hover: #222a3d;
+        --shadow: none;
       }
     }
     * { box-sizing: border-box; }
@@ -35,20 +47,78 @@
       color: var(--text);
       font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
     }
-    main { max-width: 1600px; margin: 0 auto; padding: 24px; }
-    h1 { margin: 0 0 6px; font-size: 28px; }
+    main { max-width: 1800px; margin: 0 auto; padding: 24px; }
+    h1 { margin: 0 0 6px; font-size: 30px; line-height: 1.2; }
+    h2 { margin: 0; font-size: 16px; }
     .subtitle { margin: 0 0 22px; color: var(--muted); }
-    .filters {
+    .section-caption { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+    .journal-section { margin-bottom: 16px; }
+    .journal-section-heading { margin-bottom: 9px; }
+    .journal-cards {
       display: grid;
-      grid-template-columns: minmax(240px, 2fr) repeat(6, minmax(140px, 1fr));
+      grid-template-columns: repeat(4, minmax(180px, 1fr));
       gap: 10px;
+    }
+    .journal-card {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      min-height: 72px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--bg);
+      color: var(--text);
+      text-align: left;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+    }
+    .journal-card:hover { border-color: var(--accent); background: var(--accent-soft); }
+    .journal-card.active { border: 2px solid var(--accent); padding: 11px; background: var(--accent-soft); }
+    .journal-icon {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: var(--panel-strong);
+      font-weight: 700;
+      color: var(--muted);
+    }
+    .journal-card[data-journal="security"] .journal-icon { background: #fee4e2; color: #b42318; }
+    .journal-card[data-journal="engineer"] .journal-icon { background: #e0edff; color: #175cd3; }
+    .journal-card[data-journal="operator"] .journal-icon { background: #dcfae6; color: #067647; }
+    .journal-name { display: block; font-weight: 650; }
+    .journal-description { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; }
+    .journal-count {
+      min-width: 30px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--panel-strong);
+      text-align: center;
+      font-weight: 650;
+    }
+    .filter-panel {
       padding: 14px;
       border: 1px solid var(--line);
       border-radius: 10px;
       background: var(--panel);
     }
-    label { display: grid; gap: 5px; color: var(--muted); font-size: 12px; }
-    input, select, button {
+    .filter-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(280px, 2fr) repeat(5, minmax(145px, 1fr));
+      gap: 10px;
+    }
+    label { display: grid; gap: 5px; color: var(--muted); font-size: 12px; font-weight: 600; }
+    input, select, .action-button {
       min-height: 38px;
       border: 1px solid var(--line);
       border-radius: 7px;
@@ -57,40 +127,103 @@
       padding: 7px 9px;
       font: inherit;
     }
-    button { cursor: pointer; }
-    button:hover { border-color: var(--accent); }
+    input:focus, select:focus, button:focus-visible, a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .action-button { cursor: pointer; white-space: nowrap; }
+    .action-button:hover { border-color: var(--accent); color: var(--accent); }
     .toolbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 12px;
-      margin: 16px 0 8px;
+      margin: 14px 0 8px;
       color: var(--muted);
     }
+    .toolbar-summary { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; }
+    #count { color: var(--text); font-size: 15px; }
+    .toolbar-actions { display: flex; gap: 8px; }
+    .table-help { margin: 0 0 8px; color: var(--muted); font-size: 12px; }
     .table-wrap {
+      max-height: 68vh;
       overflow: auto;
       border: 1px solid var(--line);
       border-radius: 10px;
+      box-shadow: var(--shadow);
     }
-    table { width: 100%; min-width: 1280px; border-collapse: collapse; }
+    table { min-width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
     th, td {
       padding: 10px 12px;
+      border-right: 1px solid var(--line);
       border-bottom: 1px solid var(--line);
       text-align: left;
       vertical-align: top;
+      overflow-wrap: break-word;
     }
+    th:last-child, td:last-child { border-right: 0; }
+    tbody tr:last-child td { border-bottom: 0; }
     th {
       position: sticky;
       top: 0;
-      z-index: 1;
-      background: var(--panel);
+      z-index: 2;
+      padding: 0;
+      background: var(--panel-strong);
       white-space: nowrap;
+      user-select: none;
     }
-    tbody tr:hover { background: color-mix(in srgb, var(--accent) 7%, transparent); }
-    .code { font: 600 13px/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .sort-button {
+      width: 100%;
+      min-height: 43px;
+      padding: 10px 24px 10px 12px;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      font-weight: 700;
+      text-align: left;
+      cursor: pointer;
+    }
+    .sort-button:hover { color: var(--accent); background: var(--accent-soft); }
+    .sort-indicator { margin-left: 5px; color: var(--accent); }
+    .resize-handle {
+      position: absolute;
+      top: 0;
+      right: -4px;
+      z-index: 4;
+      width: 9px;
+      height: 100%;
+      cursor: col-resize;
+      touch-action: none;
+    }
+    .resize-handle::after {
+      content: "";
+      position: absolute;
+      top: 8px;
+      bottom: 8px;
+      left: 4px;
+      width: 1px;
+      background: var(--line-strong);
+    }
+    .resize-handle:hover::after, .resize-handle.dragging::after { width: 2px; background: var(--accent); }
+    tbody tr { background: var(--bg); }
+    tbody tr:nth-child(even) { background: var(--row-alt); }
+    tbody tr:hover { background: var(--row-hover); }
+    th:first-child { left: 0; z-index: 3; }
+    td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      background: inherit;
+      box-shadow: 1px 0 0 var(--line);
+    }
+    .code { white-space: nowrap; font: 600 13px/1.4 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .code-link { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
     .chips { display: flex; flex-wrap: wrap; gap: 4px; }
     .chip {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
       padding: 2px 7px;
       border-radius: 999px;
       background: var(--chip);
@@ -98,61 +231,138 @@
       white-space: nowrap;
       font-size: 12px;
     }
+    .requirement-link {
+      border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 650;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      cursor: pointer;
+    }
+    .requirement-link:hover { border-color: var(--accent); filter: brightness(0.98); }
+    .requirement-missing {
+      border: 1px dashed var(--line-strong);
+      background: transparent;
+      color: var(--muted);
+      cursor: help;
+    }
     .status-draft { background: #fff1c2; color: #755600; }
     .status-review { background: #dce8ff; color: #244a8f; }
     .status-approved { background: #d9f4df; color: #246333; }
     .status-deprecated { background: #ececf0; color: #555b66; }
     a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
     .empty, .error { padding: 32px; text-align: center; color: var(--muted); }
     .error { color: #b42318; }
     @media (max-width: 1200px) {
+      .journal-cards { grid-template-columns: repeat(2, minmax(220px, 1fr)); }
       .filters { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
       .filters label:first-child { grid-column: 1 / -1; }
     }
     @media (max-width: 700px) {
       main { padding: 14px; }
-      .filters { grid-template-columns: 1fr; }
+      h1 { font-size: 25px; }
+      .journal-cards, .filters { grid-template-columns: 1fr; }
       .filters label:first-child { grid-column: auto; }
+      .filter-heading, .toolbar { align-items: flex-start; flex-direction: column; }
+      .toolbar-actions { width: 100%; }
+      .toolbar-actions .action-button { flex: 1; }
     }
   </style>
 </head>
 <body>
 <main>
-  <h1>Реестр событий РСУ</h1>
-  <p class="subtitle">Поиск и фильтрация событий Журналов Инженера, Оператора и ИБ.</p>
+  <header>
+    <h1>Реестр событий РСУ</h1>
+    <p class="subtitle">Единый каталог событий Журналов Инженера, Оператора и ИБ.</p>
+  </header>
 
-  <section class="filters" aria-label="Фильтры">
-    <label>Поиск
-      <input id="search" type="search" placeholder="Код, действие, требование, ГОСТ…">
-    </label>
-    <label>Статус<select id="status"><option value="">Все</option></select></label>
-    <label>Область<select id="domain"><option value="">Все</option></select></label>
-    <label>Источник<select id="source"><option value="">Все</option></select></label>
-    <label>Журнал<select id="journal"><option value="">Все</option></select></label>
-    <label>Критичность<select id="severity"><option value="">Все</option></select></label>
-    <label>Исход<select id="outcome"><option value="">Все</option></select></label>
+  <section class="journal-section" aria-labelledby="journal-heading">
+    <div class="journal-section-heading">
+      <h2 id="journal-heading">Представления журналов</h2>
+      <p class="section-caption">Выберите журнал, чтобы сразу показать относящиеся к нему события.</p>
+    </div>
+    <div class="journal-cards" role="group" aria-label="Выбор журнала">
+      <button class="journal-card active" type="button" data-journal="" aria-pressed="true">
+        <span class="journal-icon">Все</span>
+        <span><span class="journal-name">Все события</span><span class="journal-description">Полный Реестр</span></span>
+        <span class="journal-count" data-count-for="all">0</span>
+      </button>
+      <button class="journal-card" type="button" data-journal="security" aria-pressed="false">
+        <span class="journal-icon">ИБ</span>
+        <span><span class="journal-name">Журнал ИБ</span><span class="journal-description">События безопасности</span></span>
+        <span class="journal-count" data-count-for="security">0</span>
+      </button>
+      <button class="journal-card" type="button" data-journal="engineer" aria-pressed="false">
+        <span class="journal-icon">И</span>
+        <span><span class="journal-name">Журнал Инженера</span><span class="journal-description">Инженерные действия</span></span>
+        <span class="journal-count" data-count-for="engineer">0</span>
+      </button>
+      <button class="journal-card" type="button" data-journal="operator" aria-pressed="false">
+        <span class="journal-icon">О</span>
+        <span><span class="journal-name">Журнал Оператора</span><span class="journal-description">Оперативные действия</span></span>
+        <span class="journal-count" data-count-for="operator">0</span>
+      </button>
+    </div>
+  </section>
+
+  <section class="filter-panel" aria-labelledby="filter-heading">
+    <div class="filter-heading">
+      <div>
+        <h2 id="filter-heading">Поиск и фильтры</h2>
+        <p class="section-caption">Фильтры применяются одновременно.</p>
+      </div>
+      <button id="reset" class="action-button" type="button">Сбросить фильтры</button>
+    </div>
+    <div class="filters">
+      <label>Поиск по Реестру
+        <input id="search" type="search" placeholder="Например: EVT-TRD-001, авторизация, FEAT-753-000">
+      </label>
+      <label>Статус записи<select id="status"><option value="">Все статусы</option></select></label>
+      <label>Функциональная область<select id="domain"><option value="">Все области</option></select></label>
+      <label>Источник события<select id="source"><option value="">Все источники</option></select></label>
+      <label>Критичность<select id="severity"><option value="">Любая</option></select></label>
+      <label>Результат действия<select id="outcome"><option value="">Все результаты</option></select></label>
+    </div>
   </section>
 
   <div class="toolbar">
-    <span id="count">Загрузка…</span>
-    <button id="reset" type="button">Сбросить фильтры</button>
+    <div class="toolbar-summary">
+      <strong id="count">Загрузка…</strong>
+      <span id="activeFilters">Фильтры не заданы</span>
+    </div>
+    <div class="toolbar-actions">
+      <button id="resetColumns" class="action-button" type="button">Сбросить ширину столбцов</button>
+    </div>
   </div>
+  <p class="table-help">Нажмите на заголовок для сортировки. Потяните границу заголовка, чтобы изменить ширину столбца; двойной щелчок возвращает исходную ширину.</p>
 
   <div class="table-wrap">
-    <table>
+    <table id="registryTable">
+      <colgroup>
+        <col data-column="event_code" data-default-width="125">
+        <col data-column="action_name" data-default-width="230">
+        <col data-column="status" data-default-width="115">
+        <col data-column="domain" data-default-width="200">
+        <col data-column="source_apps" data-default-width="135">
+        <col data-column="journals" data-default-width="140">
+        <col data-column="severity" data-default-width="120">
+        <col data-column="outcomes" data-default-width="190">
+        <col data-column="requirements" data-default-width="210">
+        <col data-column="gost_type" data-default-width="270">
+      </colgroup>
       <thead>
         <tr>
-          <th>Код</th>
-          <th>Событие</th>
-          <th>Статус</th>
-          <th>Область</th>
-          <th>Источники</th>
-          <th>Журналы</th>
-          <th>Критичность</th>
-          <th>Исходы</th>
-          <th>Требования</th>
-          <th>Нормативное соответствие</th>
+          <th data-column="event_code"><button class="sort-button" type="button" data-sort="event_code">Код<span class="sort-indicator"></span></button><span class="resize-handle" title="Изменить ширину"></span></th>
+          <th data-column="action_name"><button class="sort-button" type="button" data-sort="action_name">Событие<span class="sort-indicator"></span></button><span class="resize-handle" title="Изменить ширину"></span></th>
+          <th data-column="status"><button class="sort-button" type="button" data-sort="status">Статус<span class="sort-indicator"></span></button><span class="resize-handle" title="Изменить ширину"></span></th>
+          <th data-column="domain"><button class="sort-button" type="button" data-sort="domain">Область<span class="sort-indicator"></span></button><span class="resize-handle" title="Изменить ширину"></span></th>
+          <th data-column="source_apps"><button class="sort-button" type="button" data-sort="source_apps">Источники<span class="sort-indicator"></span></button><span class="resize-handle" title="Изменить ширину"></span></th>
+          <th data-column="journals"><button class="sort-button" type="button" data-sort="journals">Журналы<span class="sort-indicator"></span></button><span class="resize-handle" title="Изменить ширину"></span></th>
+          <th data-column="severity"><button class="sort-button" type="button" data-sort="severity">Критичность<span class="sort-indicator"></span></button><span class="resize-handle" title="Изменить ширину"></span></th>
+          <th data-column="outcomes"><button class="sort-button" type="button" data-sort="outcomes">Исходы<span class="sort-indicator"></span></button><span class="resize-handle" title="Изменить ширину"></span></th>
+          <th data-column="requirements"><button class="sort-button" type="button" data-sort="requirements">Требования<span class="sort-indicator"></span></button><span class="resize-handle" title="Изменить ширину"></span></th>
+          <th data-column="gost_type"><button class="sort-button" type="button" data-sort="gost_type">Нормативное соответствие<span class="sort-indicator"></span></button><span class="resize-handle" title="Изменить ширину"></span></th>
         </tr>
       </thead>
       <tbody id="rows"></tbody>
@@ -162,17 +372,28 @@
 </main>
 
 <script>
-  const state = { events: [] }
-  const ids = ["search", "status", "domain", "source", "journal", "severity", "outcome"]
+  const state = { events: [], journal: "", sortKey: "event_code", sortDirection: "asc" }
+  const ids = ["search", "status", "domain", "source", "severity", "outcome"]
   const el = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]))
   const rows = document.getElementById("rows")
   const count = document.getElementById("count")
+  const activeFilters = document.getElementById("activeFilters")
   const message = document.getElementById("message")
+  const table = document.getElementById("registryTable")
+  const journalCards = [...document.querySelectorAll(".journal-card")]
+  const columnStorageKey = "event-registry-column-widths-v1"
 
   const labels = {
     security: "ИБ",
     engineer: "Инженера",
     operator: "Оператора",
+    armi: "АРМИ",
+    armo: "АРМО",
+    success: "Успешно",
+    access_denied: "Отказ в доступе",
+    validation_error: "Ошибка проверки",
+    resource_busy: "Ресурс занят",
+    system_failure: "Системный сбой",
     draft: "Черновик",
     review: "На ревью",
     approved: "Согласовано",
@@ -191,8 +412,8 @@
     const id = requirementId(requirement)
     const url = typeof requirement === "object" && requirement !== null ? requirement.url : ""
     return url
-      ? `<a class="chip" href="${escapeHtml(url)}" title="Открыть требование ${escapeHtml(id)}">${escapeHtml(id)}</a>`
-      : chip(id)
+      ? `<a class="chip requirement-link" href="${escapeHtml(url)}" title="Открыть требование ${escapeHtml(id)}">${escapeHtml(id)} <span aria-hidden="true">↗</span></a>`
+      : `<span class="chip requirement-missing" title="Страница требования ${escapeHtml(id)} не найдена в текущей ветке">${escapeHtml(id)}</span>`
   }
   const requirementChips = requirements =>
     `<div class="chips">${list(requirements).map(requirementChip).join("")}</div>`
@@ -237,17 +458,58 @@
       && (!el.status.value || event.status === el.status.value)
       && (!el.domain.value || event.domain === el.domain.value)
       && (!el.source.value || list(event.source_apps).includes(el.source.value))
-      && (!el.journal.value || list(event.journals).includes(el.journal.value))
+      && (!state.journal || list(event.journals).includes(state.journal))
       && (!el.severity.value || event.severity === el.severity.value)
       && (!el.outcome.value || list(event.outcomes).includes(el.outcome.value))
   }
 
+  function sortValue(event, key) {
+    if (key === "requirements") return list(event.requirements).map(requirementId).join(" ")
+    const value = event[key]
+    return Array.isArray(value) ? value.join(" ") : text(value)
+  }
+
+  function sorted(events) {
+    return [...events].sort((left, right) => {
+      const result = sortValue(left, state.sortKey).localeCompare(
+        sortValue(right, state.sortKey), "ru", { numeric: true, sensitivity: "base" }
+      )
+      return state.sortDirection === "asc" ? result : -result
+    })
+  }
+
+  function updateSortIndicators() {
+    document.querySelectorAll("th[data-column]").forEach(th => {
+      const active = th.dataset.column === state.sortKey
+      th.setAttribute("aria-sort", active ? (state.sortDirection === "asc" ? "ascending" : "descending") : "none")
+      th.querySelector(".sort-indicator").textContent = active ? (state.sortDirection === "asc" ? "▲" : "▼") : ""
+    })
+  }
+
+  function updateJournalCards() {
+    journalCards.forEach(card => {
+      const active = card.dataset.journal === state.journal
+      card.classList.toggle("active", active)
+      card.setAttribute("aria-pressed", String(active))
+    })
+  }
+
+  function updateJournalCounts() {
+    document.querySelector('[data-count-for="all"]').textContent = state.events.length
+    for (const journal of ["security", "engineer", "operator"]) {
+      document.querySelector(`[data-count-for="${journal}"]`).textContent =
+        state.events.filter(event => list(event.journals).includes(journal)).length
+    }
+  }
+
   function render() {
-    const visible = state.events.filter(matches)
+    const visible = sorted(state.events.filter(matches))
     count.textContent = `Показано: ${visible.length} из ${state.events.length}`
+    const filterCount = ids.filter(id => el[id].value).length + (state.journal ? 1 : 0)
+    activeFilters.textContent = filterCount ? `Активных фильтров: ${filterCount}` : "Фильтры не заданы"
     rows.innerHTML = visible.map(event => `
       <tr>
-        <td class="code"><a href="${escapeHtml(event.details_url)}">${escapeHtml(event.event_code)}</a></td>
+        <td class="code"><a class="code-link" href="${escapeHtml(event.details_url)}">${escapeHtml(event.event_code)}</a></td>
         <td>${escapeHtml(event.action_name)}</td>
         <td>${chip(event.status, `status-${event.status}`)}</td>
         <td>${escapeHtml(event.domain)}</td>
@@ -264,15 +526,97 @@
     `).join("")
     message.hidden = visible.length > 0
     if (!visible.length) {
-      message.textContent = "По заданным условиям события не найдены."
+      message.textContent = "По заданным условиям события не найдены. Измените или сбросьте фильтры."
     }
+    updateSortIndicators()
   }
 
   ids.forEach(id => el[id].addEventListener("input", render))
+  journalCards.forEach(card => card.addEventListener("click", () => {
+    state.journal = card.dataset.journal
+    updateJournalCards()
+    render()
+  }))
+  document.querySelectorAll(".sort-button").forEach(button => button.addEventListener("click", () => {
+    const key = button.dataset.sort
+    if (state.sortKey === key) state.sortDirection = state.sortDirection === "asc" ? "desc" : "asc"
+    else {
+      state.sortKey = key
+      state.sortDirection = "asc"
+    }
+    render()
+  }))
   document.getElementById("reset").addEventListener("click", () => {
     ids.forEach(id => { el[id].value = "" })
+    state.journal = ""
+    updateJournalCards()
     render()
   })
+
+  function columnElements(column) {
+    return {
+      col: document.querySelector(`col[data-column="${column}"]`),
+      th: document.querySelector(`th[data-column="${column}"]`)
+    }
+  }
+
+  function updateTableWidth() {
+    const width = [...document.querySelectorAll("col[data-column]")]
+      .reduce((sum, col) => sum + Number.parseInt(col.style.width || col.dataset.defaultWidth, 10), 0)
+    table.style.width = `${width}px`
+  }
+
+  function setColumnWidth(column, width) {
+    const { col } = columnElements(column)
+    col.style.width = `${Math.max(90, Math.min(520, Math.round(width)))}px`
+    updateTableWidth()
+  }
+
+  function loadColumnWidths() {
+    let saved = {}
+    try { saved = JSON.parse(localStorage.getItem(columnStorageKey) || "{}") } catch (_) {}
+    document.querySelectorAll("col[data-column]").forEach(col => {
+      setColumnWidth(col.dataset.column, saved[col.dataset.column] || col.dataset.defaultWidth)
+    })
+  }
+
+  function saveColumnWidths() {
+    const widths = Object.fromEntries([...document.querySelectorAll("col[data-column]")]
+      .map(col => [col.dataset.column, Number.parseInt(col.style.width, 10)]))
+    try { localStorage.setItem(columnStorageKey, JSON.stringify(widths)) } catch (_) {}
+  }
+
+  document.querySelectorAll(".resize-handle").forEach(handle => {
+    const column = handle.closest("th").dataset.column
+    handle.addEventListener("pointerdown", event => {
+      event.preventDefault()
+      event.stopPropagation()
+      const startX = event.clientX
+      const startWidth = columnElements(column).th.getBoundingClientRect().width
+      handle.classList.add("dragging")
+      const move = moveEvent => setColumnWidth(column, startWidth + moveEvent.clientX - startX)
+      const stop = () => {
+        handle.classList.remove("dragging")
+        document.removeEventListener("pointermove", move)
+        document.removeEventListener("pointerup", stop)
+        saveColumnWidths()
+      }
+      document.addEventListener("pointermove", move)
+      document.addEventListener("pointerup", stop)
+    })
+    handle.addEventListener("dblclick", event => {
+      event.preventDefault()
+      setColumnWidth(column, columnElements(column).col.dataset.defaultWidth)
+      saveColumnWidths()
+    })
+  })
+
+  document.getElementById("resetColumns").addEventListener("click", () => {
+    document.querySelectorAll("col[data-column]").forEach(col => setColumnWidth(col.dataset.column, col.dataset.defaultWidth))
+    try { localStorage.removeItem(columnStorageKey) } catch (_) {}
+  })
+
+  loadColumnWidths()
 
   fetch("./events.json")
     .then(response => {
@@ -284,9 +628,10 @@
       fillSelect("status")
       fillSelect("domain")
       fillSelect("source", "source_apps")
-      fillSelect("journal", "journals")
       fillSelect("severity")
       fillSelect("outcome", "outcomes")
+      updateJournalCounts()
+      updateJournalCards()
       render()
     })
     .catch(error => {
