@@ -185,6 +185,17 @@
     `<span class="chip ${className}">${escapeHtml(labels[value] ?? value)}</span>`
   const chips = (values, className = "") =>
     `<div class="chips">${list(values).map(v => chip(v, className)).join("")}</div>`
+  const requirementId = requirement =>
+    typeof requirement === "object" && requirement !== null ? requirement.id : requirement
+  const requirementChip = requirement => {
+    const id = requirementId(requirement)
+    const url = typeof requirement === "object" && requirement !== null ? requirement.url : ""
+    return url
+      ? `<a class="chip" href="${escapeHtml(url)}" title="Открыть требование ${escapeHtml(id)}">${escapeHtml(id)}</a>`
+      : chip(id)
+  }
+  const requirementChips = requirements =>
+    `<div class="chips">${list(requirements).map(requirementChip).join("")}</div>`
   const escapeHtml = value => text(value).replace(/[&<>"']/g, c => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
   }[c]))
@@ -217,7 +228,7 @@
       ...list(event.journals),
       event.severity,
       ...list(event.outcomes),
-      ...list(event.requirements),
+      ...list(event.requirements).map(requirementId),
       event.gost_type,
       ...list(event.fstec_measures)
     ].join(" ").toLocaleLowerCase("ru")
@@ -244,7 +255,7 @@
         <td>${chips(event.journals)}</td>
         <td>${chip(event.severity)}</td>
         <td>${chips(event.outcomes)}</td>
-        <td>${chips(event.requirements)}</td>
+        <td>${requirementChips(event.requirements)}</td>
         <td>
           <div>${escapeHtml(event.gost_type)}</div>
           ${chips(event.fstec_measures)}
@@ -287,4 +298,3 @@
 </script>
 </body>
 </html>
-
